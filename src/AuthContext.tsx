@@ -26,7 +26,7 @@ const generateState = () => {
 
 // EVE Online OAuth Config
 const CLIENT_ID = "e16177c8687048608d1795a9d9fb96d9";
-const REDIRECT_URI = "http://localhost:5173/callback"; // Adjust to your redirect URI
+const REDIRECT_URI = `${window.location.origin}/callback`
 const SCOPE = "esi-search.search_structures.v1";
 const RESPONSE_TYPE = "token";
 const EVE_AUTH_URL = `https://login.eveonline.com/v2/oauth/authorize`;
