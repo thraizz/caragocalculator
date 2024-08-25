@@ -1,6 +1,6 @@
-import { useAuth } from './useAuth';
+import { useAuth } from "./useAuth";
 
-const LogoutButton = () => {
+export const LogoutButton = () => {
   const { logout, characterName } = useAuth();
 
   return (
@@ -14,5 +14,3 @@ const LogoutButton = () => {
     </div>
   );
 };
-
-export default LogoutButton;

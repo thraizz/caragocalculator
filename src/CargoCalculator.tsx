@@ -1,24 +1,24 @@
-import { useState } from 'react';
-import { useAuth } from './useAuth';
+import { useState } from "react";
+import { useAuth } from "./useAuth";
 
 export const CargoCalculator = () => {
   const { accessToken, characterId } = useAuth();
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [cargoSpace, setCargoSpace] = useState<number | null>(null);
 
   // Function to parse clipboard text
   const parseClipboard = (text: string) => {
-    const lines = text.split('\n');
-    type item = {itemName: string, quantity: number};
-    const items: item[]  = [];
+    const lines = text.split("\n");
+    type item = { itemName: string; quantity: number };
+    const items: item[] = [];
 
     lines.forEach((line) => {
-      if(line.includes("Total:")) return;
-      const parts = line.split('\t');
+      if (line.includes("Total:")) return;
+      const parts = line.split("\t");
       if (parts.length >= 4) {
         const itemName = parts[0].trim();
         const quantity = parseInt(
-          parts[1].trim().replace('.', '').replace(',', ''),
+          parts[1].trim().replace(".", "").replace(",", ""),
           10
         );
         items.push({ itemName, quantity });
@@ -31,7 +31,9 @@ export const CargoCalculator = () => {
   const fetchItemVolume = async (itemName: string) => {
     try {
       const response = await fetch(
-        `https://esi.evetech.net/latest/characters/${characterId}/search/?categories=inventory_type&datasource=tranquility&language=en&search=${encodeURIComponent(itemName)}&strict=true`,
+        `https://esi.evetech.net/latest/characters/${characterId}/search/?categories=inventory_type&datasource=tranquility&language=en&search=${encodeURIComponent(
+          itemName
+        )}&strict=true`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -42,7 +44,9 @@ export const CargoCalculator = () => {
 
       if (searchData.inventory_type && searchData.inventory_type.length > 0) {
         const typeId = searchData.inventory_type[0];
-        const typeResponse = await fetch(`https://esi.evetech.net/latest/universe/types/${typeId}/`);
+        const typeResponse = await fetch(
+          `https://esi.evetech.net/latest/universe/types/${typeId}/`
+        );
         const typeData = await typeResponse.json();
         return typeData.volume;
       } else {
@@ -53,7 +57,6 @@ export const CargoCalculator = () => {
       return 0;
     }
   };
-
 
   // Function to calculate the total cargo space
   const calculateCargoSpace = async () => {
@@ -67,10 +70,15 @@ export const CargoCalculator = () => {
     setCargoSpace(totalCargoSpace);
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    calculateCargoSpace();
+  };
+
   return (
-    <div>
-      <h2>EVE Online Cargo Calculator</h2>
+    <form onSubmit={handleSubmit} aria-disabled={!accessToken}>
       <textarea
+        disabled={!accessToken}
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         rows={10}
@@ -78,10 +86,12 @@ export const CargoCalculator = () => {
         placeholder="Paste your market order here"
       />
       <br />
-      <button onClick={calculateCargoSpace}>Calculate Cargo Space</button>
+      <button disabled={!accessToken} type="submit">
+        Calculate Cargo Space
+      </button>
       {!!cargoSpace && (
         <p>Total Required Cargo Space: {cargoSpace.toFixed(2)} m³</p>
       )}
-    </div>
+    </form>
   );
 };
