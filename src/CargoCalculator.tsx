@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useAuth } from './useAuth';
 
-export const CargoCalculator = ({characterId}) => {
+export const CargoCalculator = () => {
+  const { accessToken, characterId } = useAuth();
   const [inputText, setInputText] = useState('');
-  const [cargoSpace, setCargoSpace] = useState(null);
+  const [cargoSpace, setCargoSpace] = useState<number | null>(null);
 
   // Function to parse clipboard text
-  const parseClipboard = (text) => {
+  const parseClipboard = (text: string) => {
     const lines = text.split('\n');
-    const items = [];
+    type item = {itemName: string, quantity: number};
+    const items: item[]  = [];
 
     lines.forEach((line) => {
       if(line.includes("Total:")) return;
@@ -25,10 +28,15 @@ export const CargoCalculator = ({characterId}) => {
     return items;
   };
 
-  const fetchItemVolume = async (itemName) => {
+  const fetchItemVolume = async (itemName: string) => {
     try {
       const response = await fetch(
-        `https://esi.evetech.net/latest/characters/${characterId}/search/?categories=inventory_type&datasource=tranquility&language=en&search=${encodeURIComponent(itemName)}&strict=true`
+        `https://esi.evetech.net/latest/characters/${characterId}/search/?categories=inventory_type&datasource=tranquility&language=en&search=${encodeURIComponent(itemName)}&strict=true`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
       const searchData = await response.json();
 
@@ -56,7 +64,7 @@ export const CargoCalculator = ({characterId}) => {
       const volume = await fetchItemVolume(item.itemName);
       totalCargoSpace += volume * item.quantity;
     }
-    if(!!totalCargoSpace) setCargoSpace(totalCargoSpace);
+    setCargoSpace(totalCargoSpace);
   };
 
   return (
