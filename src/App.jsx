@@ -5,7 +5,7 @@ function App() {
   return (
     <div>
       <h1> Cargo Calculator</h1>
-      <CargoCalculator />
+      <CargoCalculator characterId={123456} />
     </div>
   );
 }

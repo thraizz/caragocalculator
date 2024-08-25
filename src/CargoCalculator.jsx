@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const CargoCalculator = () => {
+export const CargoCalculator = ({characterId}) => {
   const [inputText, setInputText] = useState('');
   const [cargoSpace, setCargoSpace] = useState(null);
 
@@ -10,6 +10,7 @@ export const CargoCalculator = () => {
     const items = [];
 
     lines.forEach((line) => {
+      if(line.includes("Total:")) return;
       const parts = line.split('\t');
       if (parts.length >= 4) {
         const itemName = parts[0].trim();
@@ -24,24 +25,27 @@ export const CargoCalculator = () => {
     return items;
   };
 
-  // Function to get volume data for an item using EVE API
   const fetchItemVolume = async (itemName) => {
-    const response = await fetch(
-      `https://esi.evetech.net/latest/search/?categories=inventory_type&search=${itemName}&strict=true`
-    );
-    const searchData = await response.json();
-
-    if (searchData.inventory_type && searchData.inventory_type.length > 0) {
-      const typeId = searchData.inventory_type[0];
-      const typeResponse = await fetch(
-        `https://esi.evetech.net/latest/universe/types/${typeId}/`
+    try {
+      const response = await fetch(
+        `https://esi.evetech.net/latest/characters/${characterId}/search/?categories=inventory_type&datasource=tranquility&language=en&search=${encodeURIComponent(itemName)}&strict=true`
       );
-      const typeData = await typeResponse.json();
-      return typeData.volume;
-    } else {
+      const searchData = await response.json();
+
+      if (searchData.inventory_type && searchData.inventory_type.length > 0) {
+        const typeId = searchData.inventory_type[0];
+        const typeResponse = await fetch(`https://esi.evetech.net/latest/universe/types/${typeId}/`);
+        const typeData = await typeResponse.json();
+        return typeData.volume;
+      } else {
+        return 0;
+      }
+    } catch (error) {
+      console.error(`Error fetching volume for ${itemName}:`, error);
       return 0;
     }
   };
+
 
   // Function to calculate the total cargo space
   const calculateCargoSpace = async () => {
@@ -52,8 +56,7 @@ export const CargoCalculator = () => {
       const volume = await fetchItemVolume(item.itemName);
       totalCargoSpace += volume * item.quantity;
     }
-
-    setCargoSpace(totalCargoSpace);
+    if(!!totalCargoSpace) setCargoSpace(totalCargoSpace);
   };
 
   return (
@@ -68,7 +71,7 @@ export const CargoCalculator = () => {
       />
       <br />
       <button onClick={calculateCargoSpace}>Calculate Cargo Space</button>
-      {cargoSpace !== null && (
+      {!!cargoSpace && (
         <p>Total Required Cargo Space: {cargoSpace.toFixed(2)} m³</p>
       )}
     </div>
