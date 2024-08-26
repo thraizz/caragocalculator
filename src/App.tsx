@@ -1,4 +1,3 @@
-import { PropsWithChildren } from "react";
 import "./App.css";
 import { AuthProvider } from "./AuthContext.tsx";
 import { CargoCalculator } from "./CargoCalculator.tsx";
@@ -10,19 +9,14 @@ export const App = () => {
   return (
     <AuthProvider>
       <div>
-        <TopBar>
+        <div className="top-bar">
           <LoginButton />
           <LogoutButton />
-        </TopBar>
+        </div>
         <h1>EVE Online Cargo Calculator</h1>
         <LoginHint />
         <CargoCalculator />
       </div>
     </AuthProvider>
   );
-}
-
-
-const TopBar = ({ children }: PropsWithChildren) => {
-  return <div className="top-bar">{children}</div>;
 }
