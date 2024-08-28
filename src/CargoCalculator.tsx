@@ -19,7 +19,7 @@ export const CargoCalculator = () => {
         const itemName = parts[0].trim();
         const quantity = parseInt(
           parts[1].trim().replace(".", "").replace(",", ""),
-          10
+          10,
         );
         items.push({ itemName, quantity });
       }
@@ -32,20 +32,20 @@ export const CargoCalculator = () => {
     try {
       const response = await fetch(
         `https://esi.evetech.net/latest/characters/${characterId}/search/?categories=inventory_type&datasource=tranquility&language=en&search=${encodeURIComponent(
-          itemName
+          itemName,
         )}&strict=true`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
       const searchData = await response.json();
 
       if (searchData.inventory_type && searchData.inventory_type.length > 0) {
         const typeId = searchData.inventory_type[0];
         const typeResponse = await fetch(
-          `https://esi.evetech.net/latest/universe/types/${typeId}/`
+          `https://esi.evetech.net/latest/universe/types/${typeId}/`,
         );
         const typeData = await typeResponse.json();
         return typeData.volume;
@@ -72,6 +72,7 @@ export const CargoCalculator = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!accessToken) return;
     calculateCargoSpace();
   };
 
@@ -86,9 +87,7 @@ export const CargoCalculator = () => {
         placeholder="Paste your market order here"
       />
       <br />
-      <button disabled={!accessToken} type="submit">
-        Calculate Cargo Space
-      </button>
+      <button type="submit">Calculate Cargo Space</button>
       {!!cargoSpace && (
         <p>Total Required Cargo Space: {cargoSpace.toFixed(2)} m³</p>
       )}
